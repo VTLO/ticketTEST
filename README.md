@@ -1,20 +1,33 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Mreso Android Build
 
-# Run and deploy your AI Studio app
+This repository contains the source code for the Mreso Android application, built with React, Vite, and Capacitor.
 
-This contains everything you need to run your app locally.
+## How to build the APK using GitHub Actions
 
-View your app in AI Studio: https://ai.studio/apps/8cc161bd-49cc-425d-ac41-0149c42f8b25
+1.  **Push your code** to the `main` branch.
+2.  **Go to the "Actions" tab** in your GitHub repository.
+3.  Select the **"Build Android APK"** workflow.
+4.  If you want to run it manually, click **"Run workflow"**.
+5.  Once the build is complete, you can download the APK from the **"Artifacts"** section of the workflow run.
 
-## Run Locally
+## Prerequisites for the build
 
-**Prerequisites:**  Node.js
+To ensure the AI verification feature works in the APK, you **MUST** add your Gemini API key to your GitHub repository secrets:
 
+1.  Go to your repository **Settings** > **Secrets and variables** > **Actions**.
+2.  Click **"New repository secret"**.
+3.  Name it `GEMINI_API_KEY`.
+4.  Paste your API key as the value.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+The GitHub Action will automatically pick up this secret and bake it into the build.
+
+## Local Development
+
+To build the APK locally:
+
+1.  `npm install`
+2.  `npm run build`
+3.  `npx cap sync`
+4.  `cd android && ./gradlew assembleDebug`
+
+The APK will be located at `android/app/build/outputs/apk/debug/app-debug.apk`.
