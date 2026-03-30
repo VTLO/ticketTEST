@@ -19,7 +19,7 @@ To ensure the AI verification feature works in the APK, you **MUST** add your Ge
 3.  Name it `GEMINI_API_KEY`.
 4.  Paste your API key as the value.
 
-The GitHub Action will automatically pick up this secret and bake it into the build.
+The GitHub Action will automatically pick up this secret and bake it into the build. The build uses **Java 22** as the minimum required version.
 
 ## Local Development (Fastlane)
 
