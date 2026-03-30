@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Mreso</string>
+    <string name="title_activity_main">Mreso</string>
+    <string name="package_name">com.mreso.app</string>
+    <string name="custom_url_scheme">com.mreso.app</string>
+</resources>
