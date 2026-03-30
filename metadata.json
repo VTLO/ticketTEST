@@ -1,0 +1,5 @@
+{
+  "name": "M-Réso Ticket Generator",
+  "description": "A virtual transit ticket generator for the Réseau M réso system with cryptographic hash simulation.",
+  "requestFramePermissions": []
+}
