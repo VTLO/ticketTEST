@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK with Fastlane
 
 on:
   push:
@@ -18,10 +18,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 20
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install Node dependencies
         run: npm install
 
       - name: Build web app
@@ -39,13 +39,14 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync
 
-      - name: Make Gradlew Executable
-        run: chmod +x android/gradlew
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
 
-      - name: Build Android APK
-        run: |
-          cd android
-          ./gradlew assembleDebug
+      - name: Build APK with Fastlane
+        run: bundle exec fastlane build
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
