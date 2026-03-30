@@ -18,7 +18,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 20
           cache: 'npm'
 
       - name: Install Node dependencies
@@ -44,6 +44,9 @@ jobs:
         with:
           ruby-version: '3.2'
           bundler-cache: true
+
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
 
       - name: Build APK with Fastlane
         run: bundle exec fastlane build
