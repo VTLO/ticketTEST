@@ -1,1 +1,32 @@
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-[#0a0a0a] overflow-hidden cursor-default;
+    overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .phone-frame {
+    @apply relative w-full h-full max-w-[430px] mx-auto bg-[#F8F9FA] dark:bg-[#111827] shadow-2xl overflow-hidden flex flex-col;
+    height: 100dvh;
+    height: 100vh; /* Fallback */
+    height: -webkit-fill-available; /* For iOS Safari */
+  }
+
+  /* Hide scrollbars for a cleaner look */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

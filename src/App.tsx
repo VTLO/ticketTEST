@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Phone, MoreVertical, Paperclip, Smile, Send, Plus, Minus, Ticket, Smartphone, Info, CheckCircle2, ShieldCheck, Sun, Moon } from 'lucide-react';
+import { ChevronLeft, Phone, Paperclip, Smile, Send, Plus, Minus, Ticket, Smartphone, Info, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 
@@ -229,303 +229,303 @@ reso-m.fr/cgv`;
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] dark:bg-[#111827] flex items-center justify-center font-sans antialiased p-4 transition-colors duration-300 relative overflow-hidden">
-      {/* Floating Robot Logo */}
-      <div className="fixed bottom-8 right-8 w-20 h-20 rounded-full border-[6px] border-[#C05621] overflow-hidden bg-black shadow-2xl z-50 pointer-events-none flex items-center justify-center">
-        <RobotLogo />
-      </div>
+    <div className="flex items-center justify-center min-h-screen bg-[#0a0a0a]">
+      <div className="phone-frame shadow-[0_0_100px_rgba(0,0,0,0.5)]">
+        {/* Floating Robot Logo - Now inside the frame */}
+        <div className="absolute bottom-8 right-8 w-16 h-16 rounded-full border-[4px] border-[#C05621] overflow-hidden bg-black shadow-2xl z-50 pointer-events-none flex items-center justify-center">
+          <RobotLogo />
+        </div>
 
-      <AnimatePresence mode="wait">
-        {view === 'setup' && (
-          <motion.div 
-            key="setup"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="w-full max-w-md flex flex-col items-center relative"
-          >
-            {/* Background Decoration */}
-            <div className="absolute -top-32 -left-32 w-80 h-80 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
-              <Logo scale={3} className="grayscale invert" />
-            </div>
-
-            {/* Header */}
-            <div className="flex flex-col items-center mb-12">
-              <Logo scale={1.2} />
-              <p className="text-gray-500 dark:text-gray-400 text-[11px] font-bold uppercase tracking-[0.2em] mt-6">
-                Tickets Gratuits Toute l'Année !
-              </p>
-            </div>
-
-            {/* Form */}
-            <div className="w-full space-y-10">
-              {/* Phone Input */}
-              <div className="space-y-3">
-                <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest ml-1">
-                  Votre numéro de mobile
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input 
-                    type="tel" 
-                    placeholder="06 00 00 00 00"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="w-full bg-white dark:bg-[#1e293b]/40 border border-gray-200 dark:border-[#2d3a4f] rounded-[24px] py-6 pl-16 pr-6 text-xl font-bold text-gray-900 dark:text-white focus:outline-none focus:border-[#FF6600] transition-all placeholder:text-gray-300 dark:placeholder:text-gray-600"
-                  />
-                </div>
+        <AnimatePresence mode="wait">
+          {view === 'setup' && (
+            <motion.div 
+              key="setup"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex-1 flex flex-col items-center p-6 overflow-y-auto no-scrollbar relative"
+            >
+              {/* Background Decoration */}
+              <div className="absolute -top-32 -left-32 w-80 h-80 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
+                <Logo scale={3} className="grayscale invert" />
               </div>
 
-              {/* Quantity Selector */}
-              <div className="bg-white dark:bg-[#1e293b]/40 border border-gray-200 dark:border-[#2d3a4f] rounded-[24px] p-6 flex items-center justify-between">
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Quantité</span>
-                  <span className="text-lg font-bold text-gray-900 dark:text-white">Nombre de titres</span>
-                </div>
-                <div className="flex items-center gap-6">
-                  <button 
-                    onClick={() => setTicketCount(Math.max(1, ticketCount - 1))}
-                    className="w-12 h-12 rounded-full bg-gray-100 dark:bg-[#1a2333] flex items-center justify-center text-gray-500 hover:text-[#FF6600] transition-all active:scale-90"
-                  >
-                    <Minus className="w-5 h-5" />
-                  </button>
-                  <span className="text-2xl font-black text-gray-900 dark:text-white w-6 text-center">{ticketCount}</span>
-                  <button 
-                    onClick={() => setTicketCount(Math.min(10, ticketCount + 1))}
-                    className="w-12 h-12 rounded-full bg-gray-100 dark:bg-[#1a2333] flex items-center justify-center text-gray-500 hover:text-[#FF6600] transition-all active:scale-90"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
+              {/* Header */}
+              <div className="flex flex-col items-center mb-12 mt-8">
+                <Logo scale={1.2} />
+                <p className="text-gray-500 dark:text-gray-400 text-[11px] font-bold uppercase tracking-[0.2em] mt-6">
+                  Tickets Gratuits Toute l'Année !
+                </p>
               </div>
 
-              {/* Action Button */}
-              <div className="pt-4 space-y-4">
-                <button 
-                  onClick={handleGenerate}
-                  className="w-full bg-[#FF5500] text-white py-6 rounded-[28px] font-bold text-xl shadow-xl shadow-orange-500/20 hover:bg-[#FF4400] transition-all active:scale-[0.98] flex items-center justify-center gap-4"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
-                    <Smartphone className="w-5 h-5" />
+              {/* Form */}
+              <div className="w-full space-y-10">
+                {/* Phone Input */}
+                <div className="space-y-3">
+                  <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest ml-1">
+                    Votre numéro de mobile
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input 
+                      type="tel" 
+                      placeholder="06 00 00 00 00"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      className="w-full bg-white dark:bg-[#1e293b]/40 border border-gray-200 dark:border-[#2d3a4f] rounded-[24px] py-6 pl-16 pr-6 text-xl font-bold text-gray-900 dark:text-white focus:outline-none focus:border-[#FF6600] transition-all placeholder:text-gray-300 dark:placeholder:text-gray-600"
+                    />
                   </div>
-                  Recevoir mon ticket
-                </button>
-
-                {history.length > 0 && (
-                  <button 
-                    onClick={() => setView('history')}
-                    className="w-full text-[#007AFF] dark:text-blue-400 py-2 font-bold text-sm hover:underline transition-all"
-                  >
-                    Voir mon historique ({history.length})
-                  </button>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {view === 'sending' && (
-          <motion.div 
-            key="sending"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex flex-col items-center space-y-8"
-          >
-            <div className="relative">
-              <div className="w-32 h-32 border-4 border-blue-100 dark:border-blue-900/30 rounded-full animate-pulse" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <motion.div
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ repeat: Infinity, duration: 1.5 }}
-                >
-                  <Smartphone className="w-12 h-12 text-[#004A99] dark:text-blue-400" />
-                </motion.div>
-              </div>
-            </div>
-            <div className="text-center space-y-5 flex flex-col items-center">
-              <Logo scale={0.9} />
-              <div className="flex items-center gap-2 justify-center text-gray-500 dark:text-gray-400 font-medium">
-                <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" />
-                <span>Traitement de votre demande...</span>
-              </div>
-              <p className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest">Envoi vers {phoneNumber}</p>
-            </div>
-          </motion.div>
-        )}
-
-        {view === 'ticket' && (
-          <motion.div 
-            key="ticket"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="w-full max-w-md bg-[#F2F2F7] dark:bg-[#0F172A] rounded-[40px] shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800 flex flex-col h-[700px]"
-          >
-            {/* iOS Style Header */}
-            <div className="bg-white/80 dark:bg-[#1E293B]/80 backdrop-blur-md p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between sticky top-0 z-10">
-              <button 
-                onClick={() => setView('setup')}
-                className="flex items-center text-[#007AFF] dark:text-blue-400 font-medium"
-              >
-                <ChevronLeft className="w-6 h-6" />
-                <span className="text-lg -ml-1">Retour</span>
-              </button>
-              <div className="flex flex-col items-center">
-                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mb-0.5">
-                  <Smartphone className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 </div>
-                <span className="text-[10px] font-bold text-gray-900 dark:text-white">93 123</span>
-              </div>
-              <button className="text-[#007AFF] dark:text-blue-400">
-                <Info className="w-6 h-6" />
-              </button>
-            </div>
 
-            {/* SMS Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 flex flex-col">
-              <div className="text-center">
-                <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Aujourd'hui {tickets[0]?.receivedTime}</span>
-              </div>
-
-              {/* User Message */}
-              <div className="self-end max-w-[80%] bg-[#007AFF] text-white p-3 rounded-2xl rounded-tr-sm shadow-sm">
-                <p className="text-sm font-medium">{selectedType}</p>
-              </div>
-
-              {/* System Response (Ticket) */}
-              {tickets.map((t, idx) => (
-                <div key={idx} className="self-start max-w-[85%] space-y-1">
-                  <div className="bg-white dark:bg-[#262629] text-gray-900 dark:text-gray-100 p-4 rounded-2xl rounded-tl-sm shadow-sm border border-gray-100 dark:border-gray-800">
-                    <pre className="text-[13px] leading-relaxed font-sans whitespace-pre-wrap break-words">
-                      {getTicketText(t)}
-                    </pre>
+                {/* Quantity Selector */}
+                <div className="bg-white dark:bg-[#1e293b]/40 border border-gray-200 dark:border-[#2d3a4f] rounded-[24px] p-6 flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Quantité</span>
+                    <span className="text-lg font-bold text-gray-900 dark:text-white">Nombre de titres</span>
                   </div>
-                  <div className="flex items-center gap-2 ml-1">
-                    <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase">{t.receivedTime}</span>
+                  <div className="flex items-center gap-6">
                     <button 
-                      onClick={() => verifyWithAI(t)}
-                      className="text-[9px] font-bold text-[#007AFF] dark:text-blue-400 uppercase hover:underline"
+                      onClick={() => setTicketCount(Math.max(1, ticketCount - 1))}
+                      className="w-12 h-12 rounded-full bg-gray-100 dark:bg-[#1a2333] flex items-center justify-center text-gray-500 hover:text-[#FF6600] transition-all active:scale-90"
                     >
-                      Vérifier avec IA
+                      <Minus className="w-5 h-5" />
+                    </button>
+                    <span className="text-2xl font-black text-gray-900 dark:text-white w-6 text-center">{ticketCount}</span>
+                    <button 
+                      onClick={() => setTicketCount(Math.min(10, ticketCount + 1))}
+                      className="w-12 h-12 rounded-full bg-gray-100 dark:bg-[#1a2333] flex items-center justify-center text-gray-500 hover:text-[#FF6600] transition-all active:scale-90"
+                    >
+                      <Plus className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
-              ))}
 
-              {/* AI Verification Result */}
-              {isVerifying && (
-                <div className="self-start bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-900/30 flex items-center gap-3 animate-pulse">
-                  <ShieldCheck className="w-5 h-5 text-blue-500" />
-                  <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Analyse sécurisée en cours...</span>
+                {/* Action Button */}
+                <div className="pt-4 space-y-4">
+                  <button 
+                    onClick={handleGenerate}
+                    className="w-full bg-[#FF5500] text-white py-6 rounded-[28px] font-bold text-xl shadow-xl shadow-orange-500/20 hover:bg-[#FF4400] transition-all active:scale-[0.98] flex items-center justify-center gap-4"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                      <Smartphone className="w-5 h-5" />
+                    </div>
+                    Recevoir mon ticket
+                  </button>
+
+                  {history.length > 0 && (
+                    <button 
+                      onClick={() => setView('history')}
+                      className="w-full text-[#007AFF] dark:text-blue-400 py-2 font-bold text-sm hover:underline transition-all"
+                    >
+                      Voir mon historique ({history.length})
+                    </button>
+                  )}
                 </div>
-              )}
+              </div>
+            </motion.div>
+          )}
 
-              {verificationResult && (
-                <div className="self-start bg-green-50 dark:bg-green-900/20 p-4 rounded-2xl border border-green-100 dark:border-green-900/30 space-y-2 max-w-[90%]">
-                  <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Rapport de sécurité IA</span>
-                  </div>
-                  <p className="text-xs text-green-700 dark:text-green-300 leading-relaxed italic">
-                    "{verificationResult}"
-                  </p>
+          {view === 'sending' && (
+            <motion.div 
+              key="sending"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex-1 flex flex-col items-center justify-center space-y-8 p-6"
+            >
+              <div className="relative">
+                <div className="w-32 h-32 border-4 border-blue-100 dark:border-blue-900/30 rounded-full animate-pulse" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <motion.div
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                  >
+                    <Smartphone className="w-12 h-12 text-[#004A99] dark:text-blue-400" />
+                  </motion.div>
                 </div>
-              )}
-            </div>
+              </div>
+              <div className="text-center space-y-5 flex flex-col items-center">
+                <Logo scale={0.9} />
+                <div className="flex items-center gap-2 justify-center text-gray-500 dark:text-gray-400 font-medium">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" />
+                  <span>Traitement de votre demande...</span>
+                </div>
+                <p className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest">Envoi vers {phoneNumber}</p>
+              </div>
+            </motion.div>
+          )}
 
-            {/* Fake SMS Input */}
-            <div className="p-4 bg-white dark:bg-[#1E293B] border-t border-gray-200 dark:border-gray-800 flex items-center gap-3">
-              <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center text-gray-400">
-                <Paperclip className="w-5 h-5" />
-              </div>
-              <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full px-4 py-2 flex items-center justify-between border border-gray-200 dark:border-gray-700">
-                <span className="text-gray-400 dark:text-gray-500 text-sm">iMessage</span>
-                <Smile className="w-5 h-5 text-gray-400" />
-              </div>
-              <div className="w-8 h-8 bg-[#007AFF] rounded-full flex items-center justify-center text-white">
-                <Send className="w-4 h-4" />
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {view === 'history' && (
-          <motion.div 
-            key="history"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="w-full max-w-md bg-white dark:bg-[#1E293B] rounded-3xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800 flex flex-col h-[600px]"
-          >
-            <div className="bg-white dark:bg-[#1E293B] p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between rounded-t-3xl">
-              <div className="flex items-center gap-3">
-                <button onClick={() => setView('setup')} className="text-gray-400 hover:text-[#FF6600] transition-colors">
+          {view === 'ticket' && (
+            <motion.div 
+              key="ticket"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="flex-1 flex flex-col h-full bg-[#F2F2F7] dark:bg-[#0F172A]"
+            >
+              {/* iOS Style Header */}
+              <div className="bg-white/80 dark:bg-[#1E293B]/80 backdrop-blur-md p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between sticky top-0 z-10">
+                <button 
+                  onClick={() => setView('setup')}
+                  className="flex items-center text-[#007AFF] dark:text-blue-400 font-medium"
+                >
                   <ChevronLeft className="w-6 h-6" />
+                  <span className="text-lg -ml-1">Retour</span>
                 </button>
-                <Logo scale={0.6} className="origin-left" />
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mb-0.5">
+                    <Smartphone className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  </div>
+                  <span className="text-[10px] font-bold text-gray-900 dark:text-white">93 123</span>
+                </div>
+                <button className="text-[#007AFF] dark:text-blue-400">
+                  <Info className="w-6 h-6" />
+                </button>
               </div>
-              <button 
-                onClick={() => {
-                  if (confirm("Effacer tout l'historique ?")) {
+
+              {/* SMS Content */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-6 flex flex-col no-scrollbar">
+                <div className="text-center">
+                  <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Aujourd'hui {tickets[0]?.receivedTime}</span>
+                </div>
+
+                {/* User Message */}
+                <div className="self-end max-w-[80%] bg-[#007AFF] text-white p-3 rounded-2xl rounded-tr-sm shadow-sm">
+                  <p className="text-sm font-medium">{selectedType}</p>
+                </div>
+
+                {/* System Response (Ticket) */}
+                {tickets.map((t, idx) => (
+                  <div key={idx} className="self-start max-w-[85%] space-y-1">
+                    <div className="bg-white dark:bg-[#262629] text-gray-900 dark:text-gray-100 p-4 rounded-2xl rounded-tl-sm shadow-sm border border-gray-100 dark:border-gray-800">
+                      <pre className="text-[13px] leading-relaxed font-sans whitespace-pre-wrap break-words">
+                        {getTicketText(t)}
+                      </pre>
+                    </div>
+                    <div className="flex items-center gap-2 ml-1">
+                      <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase">{t.receivedTime}</span>
+                      <button 
+                        onClick={() => verifyWithAI(t)}
+                        className="text-[9px] font-bold text-[#007AFF] dark:text-blue-400 uppercase hover:underline"
+                      >
+                        Vérifier avec IA
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {/* AI Verification Result */}
+                {isVerifying && (
+                  <div className="self-start bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-900/30 flex items-center gap-3 animate-pulse">
+                    <ShieldCheck className="w-5 h-5 text-blue-500" />
+                    <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Analyse sécurisée en cours...</span>
+                  </div>
+                )}
+
+                {verificationResult && (
+                  <div className="self-start bg-green-50 dark:bg-green-900/20 p-4 rounded-2xl border border-green-100 dark:border-green-900/30 space-y-2 max-w-[90%]">
+                    <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span className="text-[10px] font-bold uppercase tracking-wider">Rapport de sécurité IA</span>
+                    </div>
+                    <p className="text-xs text-green-700 dark:text-green-300 leading-relaxed italic">
+                      "{verificationResult}"
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Fake SMS Input */}
+              <div className="p-4 bg-white dark:bg-[#1E293B] border-t border-gray-200 dark:border-gray-800 flex items-center gap-3">
+                <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center text-gray-400">
+                  <Paperclip className="w-5 h-5" />
+                </div>
+                <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full px-4 py-2 flex items-center justify-between border border-gray-200 dark:border-gray-700">
+                  <span className="text-gray-400 dark:text-gray-500 text-sm">iMessage</span>
+                  <Smile className="w-5 h-5 text-gray-400" />
+                </div>
+                <div className="w-8 h-8 bg-[#007AFF] rounded-full flex items-center justify-center text-white">
+                  <Send className="w-4 h-4" />
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {view === 'history' && (
+            <motion.div 
+              key="history"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex-1 flex flex-col h-full bg-white dark:bg-[#1E293B]"
+            >
+              <div className="bg-white dark:bg-[#1E293B] p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setView('setup')} className="text-gray-400 hover:text-[#FF6600] transition-colors">
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <Logo scale={0.6} className="origin-left" />
+                </div>
+                <button 
+                  onClick={() => {
                     setHistory([]);
                     setView('setup');
-                  }
-                }}
-                className="text-[10px] font-bold uppercase tracking-widest bg-red-50 dark:bg-red-900/20 text-red-500 px-3 py-1.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
-              >
-                Effacer
-              </button>
-            </div>
+                  }}
+                  className="text-[10px] font-bold uppercase tracking-widest bg-red-50 dark:bg-red-900/20 text-red-500 px-3 py-1.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+                >
+                  Effacer
+                </button>
+              </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-[#0F172A]">
-              {history.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-600 space-y-2">
-                  <Ticket className="w-12 h-12 opacity-20" />
-                  <p className="font-bold uppercase text-xs tracking-widest">Aucun ticket généré</p>
-                </div>
-              ) : (
-                history.map((batch) => (
-                  <button
-                    key={batch.id}
-                    onClick={() => {
-                      setTickets(batch.tickets);
-                      setView('ticket');
-                    }}
-                    className="w-full bg-white dark:bg-[#1E293B] p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:border-[#FF6600] transition-all text-left group"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                        {new Date(batch.timestamp).toLocaleDateString('fr-FR', { 
-                          day: '2-digit', 
-                          month: '2-digit', 
-                          year: '2-digit',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </span>
-                      <div className="bg-orange-100 dark:bg-orange-900/30 text-[#FF6600] text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
-                        {batch.type}
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-bold text-gray-900 dark:text-white">
-                          {batch.count} ticket{batch.count > 1 ? 's' : ''} {TICKET_CONFIG[batch.type].label}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-[#0F172A] no-scrollbar">
+                {history.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-600 space-y-2">
+                    <Ticket className="w-12 h-12 opacity-20" />
+                    <p className="font-bold uppercase text-xs tracking-widest">Aucun ticket généré</p>
+                  </div>
+                ) : (
+                  history.map((batch) => (
+                    <button
+                      key={batch.id}
+                      onClick={() => {
+                        setTickets(batch.tickets);
+                        setView('ticket');
+                      }}
+                      className="w-full bg-white dark:bg-[#1E293B] p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:border-[#FF6600] transition-all text-left group"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                          {new Date(batch.timestamp).toLocaleDateString('fr-FR', { 
+                            day: '2-digit', 
+                            month: '2-digit', 
+                            year: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
                         </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                          {batch.tickets[0].hash.slice(0, 8)}...
-                        </span>
+                        <div className="bg-orange-100 dark:bg-orange-900/30 text-[#FF6600] text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
+                          {batch.type}
+                        </div>
                       </div>
-                      <ChevronLeft className="w-5 h-5 text-gray-300 dark:text-gray-600 group-hover:text-[#FF6600] rotate-180 transition-colors" />
-                    </div>
-                  </button>
-                ))
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-gray-900 dark:text-white">
+                            {batch.count} ticket{batch.count > 1 ? 's' : ''} {TICKET_CONFIG[batch.type].label}
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                            {batch.tickets[0].hash.slice(0, 8)}...
+                          </span>
+                        </div>
+                        <ChevronLeft className="w-5 h-5 text-gray-300 dark:text-gray-600 group-hover:text-[#FF6600] rotate-180 transition-colors" />
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
