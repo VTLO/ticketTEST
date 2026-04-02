@@ -4,9 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Phone, Paperclip, Smile, Send, Plus, Minus, Ticket, Smartphone, Info, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, Phone, Paperclip, Smile, Send, Plus, Minus, Ticket, Smartphone, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 
 type View = 'setup' | 'sending' | 'ticket' | 'history';
 type TicketType = '1H';
@@ -33,56 +32,46 @@ const TICKET_CONFIG = {
   '1H': { label: '1 Heure', price: '2.60 E', code: '1H', duration: 60 },
 };
 
+const MatrixRain = () => {
+  const characters = "0123456789ABCDEFHIJKLMNOPQRSTUVWXYZ@#$%&*";
+  return (
+    <div className="absolute inset-0 overflow-hidden bg-black flex flex-wrap content-start opacity-40">
+      {Array.from({ length: 50 }).map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{ y: -100, opacity: 0 }}
+          animate={{ 
+            y: [null, 600],
+            opacity: [0, 1, 1, 0]
+          }}
+          transition={{ 
+            duration: Math.random() * 0.5 + 0.5,
+            repeat: Infinity,
+            delay: Math.random() * 0.5,
+            ease: "linear"
+          }}
+          className="text-[#00FF41] text-[10px] font-mono leading-none w-4 text-center"
+        >
+          {characters[Math.floor(Math.random() * characters.length)]}
+        </motion.div>
+      ))}
+    </div>
+  );
+};
+
 const Logo = ({ className = "", scale = 1 }: { className?: string, scale?: number }) => (
   <div className={`flex items-center justify-center ${className}`} style={{ transform: `scale(${scale})`, transformOrigin: 'center' }}>
     <div className="relative flex items-center justify-center w-11 h-11 rounded-full flex-shrink-0" style={{
       background: 'conic-gradient(from 0deg, #00A0E3, #FFCC00, #F37021, #E6007E, #662483, #1C3578, #4EB748, #C4D82D, #00A0E3)'
     }}>
       <div className="absolute inset-0 m-[12%] bg-black rounded-full flex items-center justify-center">
-        <span className="text-white font-black text-lg" style={{ fontFamily: 'Arial, sans-serif' }}>W</span>
+        <span className="text-white font-black text-lg">W</span>
       </div>
     </div>
-    <div className="flex items-center text-black dark:text-white ml-2 font-sans">
+    <div className="flex items-center text-black dark:text-white ml-2 font-mono">
       <span className="text-lg font-bold mr-1">®</span>
       <span className="text-[40px] font-black tracking-tighter leading-none">3Z0</span>
     </div>
-  </div>
-);
-
-const RobotLogo = ({ className = "" }: { className?: string }) => (
-  <div className={`relative w-full h-full bg-black flex items-center justify-center ${className}`}>
-    <svg viewBox="0 0 100 100" className="w-[85%] h-[85%]">
-      {/* Head Outline */}
-      <path d="M25,20 L75,20 L82,65 L18,65 Z" fill="none" stroke="white" strokeWidth="2.5" />
-      
-      {/* Eyes Area */}
-      {/* Left Eye - Triangle */}
-      <path d="M30,35 L45,42 L30,50 Z" fill="white" />
-      
-      {/* Right Eye - Circle with C */}
-      <circle cx="65" cy="42" r="10" fill="none" stroke="white" strokeWidth="2.5" />
-      <text x="65" y="45" fontSize="10" textAnchor="middle" fill="white" fontWeight="900" style={{ fontFamily: 'Arial, sans-serif' }}>C</text>
-      
-      {/* Mouth / Grill */}
-      <path d="M32,55 L68,55 L72,72 L28,72 Z" fill="none" stroke="white" strokeWidth="2.5" />
-      <path d="M32,55 L68,55 L72,72 L28,72 Z" fill="none" stroke="white" strokeWidth="2.5" />
-      <line x1="37" y1="55" x2="37" y2="72" stroke="white" strokeWidth="1.5" />
-      <line x1="42" y1="55" x2="42" y2="72" stroke="white" strokeWidth="1.5" />
-      <line x1="47" y1="55" x2="47" y2="72" stroke="white" strokeWidth="1.5" />
-      <line x1="53" y1="55" x2="53" y2="72" stroke="white" strokeWidth="1.5" />
-      <line x1="58" y1="55" x2="58" y2="72" stroke="white" strokeWidth="1.5" />
-      <line x1="63" y1="55" x2="63" y2="72" stroke="white" strokeWidth="1.5" />
-      
-      {/* Neck / Bottom Detail */}
-      <path d="M42,72 L58,72 L60,95 L40,95 Z" fill="none" stroke="white" strokeWidth="2" />
-      <line x1="42" y1="78" x2="58" y2="78" stroke="white" strokeWidth="1.5" />
-      <line x1="42" y1="84" x2="58" y2="84" stroke="white" strokeWidth="1.5" />
-      <line x1="42" y1="90" x2="58" y2="90" stroke="white" strokeWidth="1.5" />
-      
-      {/* Top Detail */}
-      <circle cx="50" cy="15" r="5" fill="none" stroke="white" strokeWidth="2" />
-      <circle cx="50" cy="15" r="2" fill="white" />
-    </svg>
   </div>
 );
 
@@ -93,8 +82,6 @@ export default function App() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [tickets, setTickets] = useState<TicketData[]>([]);
   const [history, setHistory] = useState<HistoryBatch[]>([]);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationResult, setVerificationResult] = useState<string | null>(null);
 
   // Apply dark mode class permanently
   useEffect(() => {
@@ -178,7 +165,7 @@ export default function App() {
 
     setTimeout(() => {
       setView('ticket');
-    }, 2000);
+    }, 1000);
   };
 
   const getTicketText = (t: TicketData) => {
@@ -204,38 +191,9 @@ reso-m.fr/cgv`;
     window.location.href = smsUrl;
   };
 
-  const verifyWithAI = async (ticket: TicketData) => {
-    setIsVerifying(true);
-    setVerificationResult(null);
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
-        contents: `Analyze this transit ticket for Réseau M réso and confirm its validity. 
-        Ticket Data: ${getTicketText(ticket)}
-        Current Time: ${new Date().toISOString()}
-        Provide a brief, professional security assessment.`,
-        config: {
-          thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH }
-        }
-      });
-      setVerificationResult(response.text || "Verification complete.");
-    } catch (error) {
-      console.error("AI Verification failed:", error);
-      setVerificationResult("Erreur lors de la vérification IA.");
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#0a0a0a]">
       <div className="phone-frame shadow-[0_0_100px_rgba(0,0,0,0.5)]">
-        {/* Floating Robot Logo - Now inside the frame */}
-        <div className="absolute bottom-8 right-8 w-16 h-16 rounded-full border-[4px] border-[#C05621] overflow-hidden bg-black shadow-2xl z-50 pointer-events-none flex items-center justify-center">
-          <RobotLogo />
-        </div>
-
         <AnimatePresence mode="wait">
           {view === 'setup' && (
             <motion.div 
@@ -331,26 +289,30 @@ reso-m.fr/cgv`;
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex-1 flex flex-col items-center justify-center space-y-8 p-6"
+              className="flex-1 flex flex-col items-center justify-center p-6 relative overflow-hidden bg-black"
             >
-              <div className="relative">
-                <div className="w-32 h-32 border-4 border-blue-100 dark:border-blue-900/30 rounded-full animate-pulse" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ repeat: Infinity, duration: 1.5 }}
-                  >
-                    <Smartphone className="w-12 h-12 text-[#004A99] dark:text-blue-400" />
-                  </motion.div>
+              <MatrixRain />
+              <div className="relative z-10 flex flex-col items-center space-y-8">
+                <div className="relative">
+                  <div className="w-32 h-32 border-4 border-[#00FF41]/20 rounded-full animate-pulse" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ repeat: Infinity, duration: 0.5 }}
+                    >
+                      <Smartphone className="w-12 h-12 text-[#00FF41]" />
+                    </motion.div>
+                  </div>
                 </div>
-              </div>
-              <div className="text-center space-y-5 flex flex-col items-center">
-                <Logo scale={0.9} />
-                <div className="flex items-center gap-2 justify-center text-gray-500 dark:text-gray-400 font-medium">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" />
-                  <span>Traitement de votre demande...</span>
+                <div className="text-center space-y-5 flex flex-col items-center">
+                  <div className="flex items-center gap-2 justify-center text-[#00FF41] font-mono text-sm">
+                    <span className="animate-pulse">{'>'}</span>
+                    <span>INITIALIZING_SECURE_TRANSFER...</span>
+                  </div>
+                  <p className="text-[10px] text-[#00FF41]/60 font-mono uppercase tracking-widest">
+                    ENCRYPTING_DATA_FOR_{phoneNumber}
+                  </p>
                 </div>
-                <p className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest">Envoi vers {phoneNumber}</p>
               </div>
             </motion.div>
           )}
@@ -398,41 +360,31 @@ reso-m.fr/cgv`;
                 {tickets.map((t, idx) => (
                   <div key={idx} className="self-start max-w-[85%] space-y-1">
                     <div className="bg-white dark:bg-[#262629] text-gray-900 dark:text-gray-100 p-4 rounded-2xl rounded-tl-sm shadow-sm border border-gray-100 dark:border-gray-800">
-                      <pre className="text-[13px] leading-relaxed font-sans whitespace-pre-wrap break-words">
+                      <pre className="text-[13px] leading-relaxed font-mono whitespace-pre-wrap break-words">
                         {getTicketText(t)}
                       </pre>
+                      
+                      {/* New Footer Item */}
+                      <div className="mt-6 bg-[#001A2C] rounded-2xl p-4 space-y-3">
+                        <p className="text-white text-[17px] font-bold leading-tight">
+                          Conditions générales de vente et d'utilisation
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 bg-[#00A0E3] rounded-full flex items-center justify-center overflow-hidden">
+                            <svg viewBox="0 0 100 100" className="w-full h-full p-1">
+                              <path d="M20,80 L50,20 L80,80 Z" fill="white" />
+                              <path d="M40,80 L50,60 L60,80 Z" fill="#00A0E3" />
+                            </svg>
+                          </div>
+                          <span className="text-white text-[13px] font-medium">www.reso-m.fr</span>
+                        </div>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2 ml-1">
                       <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase">{t.receivedTime}</span>
-                      <button 
-                        onClick={() => verifyWithAI(t)}
-                        className="text-[9px] font-bold text-[#007AFF] dark:text-blue-400 uppercase hover:underline"
-                      >
-                        Vérifier avec IA
-                      </button>
                     </div>
                   </div>
                 ))}
-
-                {/* AI Verification Result */}
-                {isVerifying && (
-                  <div className="self-start bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-900/30 flex items-center gap-3 animate-pulse">
-                    <ShieldCheck className="w-5 h-5 text-blue-500" />
-                    <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Analyse sécurisée en cours...</span>
-                  </div>
-                )}
-
-                {verificationResult && (
-                  <div className="self-start bg-green-50 dark:bg-green-900/20 p-4 rounded-2xl border border-green-100 dark:border-green-900/30 space-y-2 max-w-[90%]">
-                    <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span className="text-[10px] font-bold uppercase tracking-wider">Rapport de sécurité IA</span>
-                    </div>
-                    <p className="text-xs text-green-700 dark:text-green-300 leading-relaxed italic">
-                      "{verificationResult}"
-                    </p>
-                  </div>
-                )}
               </div>
 
               {/* Fake SMS Input */}
