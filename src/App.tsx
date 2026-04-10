@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   ChevronLeft, 
   Phone, 
@@ -17,7 +17,13 @@ import {
   Info,
   ArrowLeft,
   MoreVertical,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Square,
+  Circle,
+  Triangle,
+  AudioLines,
+  CheckCheck,
+  CornerUpRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -73,6 +79,27 @@ export default function App() {
   const [tickets, setTickets] = useState<TicketData[]>([]);
   const [history, setHistory] = useState<HistoryBatch[]>([]);
   const [selectedBatchTimestamp, setSelectedBatchTimestamp] = useState<number | null>(null);
+  const [longPressedIndex, setLongPressedIndex] = useState<number | null>(null);
+  const [longPressTimer, setLongPressTimer] = useState<any>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (view === 'ticket' && scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [view, history]);
+
+  const handlePressStart = (idx: number) => {
+    const timer = setTimeout(() => {
+      setLongPressedIndex(idx);
+    }, 600);
+    setLongPressTimer(timer);
+  };
+
+  const handlePressEnd = () => {
+    if (longPressTimer) clearTimeout(longPressTimer);
+    setLongPressedIndex(null);
+  };
 
   // Apply dark mode class permanently
   useEffect(() => {
@@ -380,47 +407,114 @@ reso-m.fr/cgv`;
               </div>
 
               {/* SMS Content */}
-              <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4 flex flex-col no-scrollbar bg-[#ffffff] dark:bg-[#1a1c1e]">
-                <div className="text-center my-4">
-                  <span className="text-[12px] font-medium text-gray-500 dark:text-gray-400">
-                    {selectedBatchTimestamp ? new Date(selectedBatchTimestamp).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Aujourd\'hui'} • {tickets[0]?.receivedTime}
-                  </span>
-                </div>
-
-                {/* User Message (Sent - Material You Style) */}
-                <div className="self-end max-w-[75%]">
-                  <div className="bg-[#d3e4ff] dark:bg-[#004a77] text-[#041e2b] dark:text-[#d3e4ff] px-4 py-3 rounded-[24px] rounded-tr-[4px] shadow-sm">
-                    <p className="text-[16px] font-medium leading-snug">{selectedType}</p>
-                  </div>
-                </div>
-
-                {/* System Response (Received - Material You Style) */}
-                {tickets.map((t, idx) => (
-                  <div key={idx} className="self-start max-w-[85%] space-y-2 animate-in fade-in slide-in-from-left-4 duration-300">
-                    <div className="flex items-end gap-2">
-                      <div className="bg-[#f2f2f2] dark:bg-[#2d2f31] text-gray-900 dark:text-gray-100 p-4 rounded-[24px] rounded-tl-[4px] shadow-sm">
-                        <pre className="text-[15px] leading-relaxed font-sans whitespace-pre-wrap break-words">
-                          {getTicketText(t)}
-                        </pre>
-                        
-                        {/* New Footer Item */}
-                        <div className="mt-5 bg-[#e1f5fe] dark:bg-[#003350] rounded-2xl p-4 space-y-3 border border-blue-100 dark:border-blue-900/30">
-                          <p className="text-[#01579b] dark:text-[#b3e5fc] text-[15px] font-bold leading-tight">
-                            Conditions générales de vente et d'utilisation
-                          </p>
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-[#00A0E3] rounded-full flex items-center justify-center overflow-hidden">
-                              <svg viewBox="0 0 100 100" className="w-full h-full p-1">
-                                <path d="M20,80 L50,20 L80,80 Z" fill="white" />
-                                <path d="M40,80 L50,60 L60,80 Z" fill="#00A0E3" />
-                              </svg>
-                            </div>
-                            <span className="text-[#01579b] dark:text-[#b3e5fc] text-[12px] font-medium">www.reso-m.fr</span>
-                          </div>
-                        </div>
-                      </div>
+              <div 
+                ref={scrollRef}
+                className="flex-1 overflow-y-auto px-4 py-2 space-y-4 flex flex-col no-scrollbar bg-[#ffffff] dark:bg-[#1a1c1e] scroll-smooth"
+              >
+                {/* Render all history batches as a continuous flow if in ticket view */}
+                {history.slice().reverse().map((batch, bIdx) => (
+                  <React.Fragment key={batch.id}>
+                    <div className="text-center my-6">
+                      <span className="text-[12px] font-medium text-gray-500 dark:text-gray-400">
+                        {new Date(batch.timestamp).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} • {batch.tickets[0]?.receivedTime}
+                      </span>
                     </div>
-                  </div>
+
+                    {/* Sent Message */}
+                    <motion.div 
+                      initial={{ opacity: 0, x: 50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: bIdx * 0.1 }}
+                      className="self-end max-w-[75%] mb-2"
+                    >
+                      <div className="bg-[#d3e4ff] dark:bg-[#004a77] text-[#041e2b] dark:text-[#d3e4ff] px-4 py-3 rounded-[24px] rounded-tr-[4px] shadow-sm">
+                        <p className="text-[16px] font-medium leading-snug">{batch.type}</p>
+                      </div>
+                      <div className="flex justify-end items-center gap-1 mt-1 px-2">
+                        <span className="text-[10px] text-gray-400">{batch.tickets[0]?.receivedTime}</span>
+                        <CheckCheck className="w-3 h-3 text-blue-500" />
+                      </div>
+                    </motion.div>
+
+                    {/* Received Messages */}
+                    {batch.tickets.map((t, idx) => {
+                      const globalIdx = bIdx * 100 + idx;
+                      const ticketText = getTicketText(t);
+                      // Extract the date/time line to underline it
+                      const lines = ticketText.split('\n');
+                      const dateTimeLineIndex = lines.findIndex(l => l.startsWith('le '));
+                      
+                      return (
+                        <motion.div 
+                          key={`${batch.id}-${idx}`}
+                          initial={{ opacity: 0, x: -50 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: bIdx * 0.1 + (idx + 1) * 0.1 }}
+                          className="self-start max-w-[90%] space-y-1 relative mb-4"
+                          onMouseDown={() => handlePressStart(globalIdx)}
+                          onMouseUp={handlePressEnd}
+                          onMouseLeave={handlePressEnd}
+                          onTouchStart={() => handlePressStart(globalIdx)}
+                          onTouchEnd={handlePressEnd}
+                        >
+                          <AnimatePresence>
+                            {longPressedIndex === globalIdx && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: -40 }}
+                                exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                                className="absolute left-0 z-50 bg-gray-800 text-white text-[10px] px-3 py-1.5 rounded-full shadow-lg whitespace-nowrap pointer-events-none"
+                              >
+                                Accusé de réception : Reçu à {t.receivedTime}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
+                          <div className="flex items-center gap-2">
+                            <button className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 shrink-0 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                              <CornerUpRight className="w-4 h-4" />
+                            </button>
+                            
+                            <div className={`overflow-hidden rounded-[24px] rounded-tl-[4px] shadow-sm transition-transform ${longPressedIndex === globalIdx ? 'scale-[0.98]' : ''}`}>
+                              {/* Dark Header Part */}
+                              <div className="bg-[#455a64] dark:bg-[#263238] text-white p-4">
+                                <pre className="text-[15px] leading-relaxed font-sans whitespace-pre-wrap break-words">
+                                  {lines.map((line, lIdx) => (
+                                    <span key={lIdx}>
+                                      {lIdx === dateTimeLineIndex ? (
+                                        <span className="underline decoration-1 underline-offset-2">{line}</span>
+                                      ) : line}
+                                      {lIdx < lines.length - 1 && '\n'}
+                                    </span>
+                                  ))}
+                                </pre>
+                              </div>
+                              
+                              {/* Light Blue Footer Part */}
+                              <div className="bg-[#e1f5fe] dark:bg-[#003350] p-4 space-y-3 border-t border-white/10">
+                                <p className="text-[#01579b] dark:text-[#b3e5fc] text-[15px] font-bold leading-tight">
+                                  Conditions générales de vente et d'utilisation
+                                </p>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-6 h-6 bg-[#00A0E3] rounded-full flex items-center justify-center overflow-hidden">
+                                    <svg viewBox="0 0 100 100" className="w-full h-full p-1">
+                                      <path d="M20,80 L50,20 L80,80 Z" fill="white" />
+                                      <path d="M40,80 L50,60 L60,80 Z" fill="#00A0E3" />
+                                    </svg>
+                                  </div>
+                                  <span className="text-[#01579b] dark:text-[#b3e5fc] text-[12px] font-medium">www.reso-m.fr</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex justify-end items-center gap-1 mt-1 px-2">
+                            <span className="text-[10px] text-gray-400">{t.receivedTime}</span>
+                            <CheckCheck className="w-3 h-3 text-blue-500" />
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </React.Fragment>
                 ))}
               </div>
 
@@ -436,8 +530,8 @@ reso-m.fr/cgv`;
                     <ImageIcon className="w-6 h-6" />
                   </div>
                 </div>
-                <button className="w-12 h-12 bg-[#d3e4ff] dark:bg-[#004a77] rounded-full flex items-center justify-center text-[#041e2b] dark:text-[#d3e4ff] shadow-md active:scale-95 transition-transform">
-                  <Send className="w-6 h-6" />
+                <button className="w-12 h-12 bg-[#f0f4f9] dark:bg-[#2d2f31] rounded-full flex items-center justify-center text-gray-600 dark:text-gray-400 shadow-sm active:scale-95 transition-transform">
+                  <AudioLines className="w-6 h-6" />
                 </button>
               </div>
             </motion.div>
