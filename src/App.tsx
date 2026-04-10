@@ -76,6 +76,7 @@ const Logo = ({ className = "", scale = 1 }: { className?: string, scale?: numbe
 );
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
   const [view, setView] = useState<View>('setup');
   const [selectedType] = useState<TicketType>('1H');
   const [ticketCount, setTicketCount] = useState(1);
@@ -86,6 +87,13 @@ export default function App() {
   // Apply dark mode class permanently
   useEffect(() => {
     document.documentElement.classList.add('dark');
+    
+    // Splash screen timer
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 200);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   // Load history from localStorage on mount
@@ -192,10 +200,42 @@ reso-m.fr/cgv`;
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#0a0a0a]">
-      <div className="phone-frame shadow-[0_0_100px_rgba(0,0,0,0.5)]">
+    <div className="flex items-center justify-center min-h-screen bg-[#050505] font-mono">
+      <div className="phone-frame">
         <AnimatePresence mode="wait">
-          {view === 'setup' && (
+          {showSplash ? (
+            <motion.div
+              key="splash"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1 }}
+              className="absolute inset-0 z-[100] bg-black flex items-center justify-center"
+            >
+              <img 
+                src="https://images.unsplash.com/photo-1561059488-916d69792237?q=80&w=2000&auto=format&fit=crop" 
+                alt="Splash"
+                className="w-full h-full object-cover opacity-80"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="flex flex-col items-center">
+                   <div className="w-40 h-40 border-4 border-white/40 rounded-full flex items-center justify-center relative">
+                      <div className="absolute inset-0 border-2 border-white/10 rounded-full animate-ping" />
+                      <span className="text-white text-6xl font-black tracking-tighter">X X</span>
+                   </div>
+                   <div className="mt-8 w-24 h-1 bg-white/20 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ x: "-100%" }}
+                        animate={{ x: "100%" }}
+                        transition={{ duration: 0.2, ease: "linear" }}
+                        className="w-full h-full bg-white"
+                      />
+                   </div>
+                </div>
+              </div>
+            </motion.div>
+          ) : view === 'setup' ? (
             <motion.div 
               key="setup"
               initial={{ opacity: 0 }}
@@ -281,9 +321,7 @@ reso-m.fr/cgv`;
                 </div>
               </div>
             </motion.div>
-          )}
-
-          {view === 'sending' && (
+          ) : view === 'sending' ? (
             <motion.div 
               key="sending"
               initial={{ opacity: 0 }}
@@ -315,95 +353,100 @@ reso-m.fr/cgv`;
                 </div>
               </div>
             </motion.div>
-          )}
-
-          {view === 'ticket' && (
+          ) : view === 'ticket' ? (
             <motion.div 
               key="ticket"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="flex-1 flex flex-col h-full bg-[#F2F2F7] dark:bg-[#0F172A]"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex-1 flex flex-col h-full bg-[#f2f2f7] dark:bg-[#000000]"
             >
-              {/* iOS Style Header */}
-              <div className="bg-white/80 dark:bg-[#1E293B]/80 backdrop-blur-md p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between sticky top-0 z-10">
+              {/* Modern Messaging Header */}
+              <div className="bg-[#f9f9f9]/90 dark:bg-[#121212]/90 backdrop-blur-xl p-4 pt-12 border-b border-gray-200 dark:border-[#222] flex items-center justify-between sticky top-0 z-20">
                 <button 
                   onClick={() => setView('setup')}
-                  className="flex items-center text-[#007AFF] dark:text-blue-400 font-medium"
+                  className="flex items-center text-[#007AFF] dark:text-[#0a84ff] transition-opacity active:opacity-50"
                 >
-                  <ChevronLeft className="w-6 h-6" />
+                  <ChevronLeft className="w-7 h-7" />
                   <span className="text-lg -ml-1">Retour</span>
                 </button>
-                <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mb-0.5">
-                    <Smartphone className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                
+                <div className="flex flex-col items-center absolute left-1/2 -translate-x-1/2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center mb-1 shadow-inner">
+                    <Smartphone className="w-4 h-4 text-white" />
                   </div>
-                  <span className="text-[10px] font-bold text-gray-900 dark:text-white">93 123</span>
+                  <span className="text-[11px] font-bold text-gray-900 dark:text-white tracking-tight">93 123</span>
                 </div>
-                <button className="text-[#007AFF] dark:text-blue-400">
+
+                <button className="text-[#007AFF] dark:text-[#0a84ff] p-1">
                   <Info className="w-6 h-6" />
                 </button>
               </div>
 
               {/* SMS Content */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-6 flex flex-col no-scrollbar">
-                <div className="text-center">
-                  <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Aujourd'hui {tickets[0]?.receivedTime}</span>
+              <div className="flex-1 overflow-y-auto px-3 py-6 space-y-4 flex flex-col no-scrollbar bg-white dark:bg-black">
+                <div className="text-center mb-4">
+                  <span className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-[0.2em]">
+                    Aujourd'hui {tickets[0]?.receivedTime}
+                  </span>
                 </div>
 
-                {/* User Message */}
-                <div className="self-end max-w-[80%] bg-[#007AFF] text-white p-3 rounded-2xl rounded-tr-sm shadow-sm">
-                  <p className="text-sm font-medium">{selectedType}</p>
+                {/* User Message (Blue Bubble) */}
+                <div className="self-end max-w-[75%] relative group">
+                  <div className="bg-[#007AFF] dark:bg-[#0a84ff] text-white px-4 py-2.5 rounded-[20px] rounded-tr-[4px] shadow-sm">
+                    <p className="text-[15px] font-medium leading-snug">{selectedType}</p>
+                  </div>
+                  <span className="absolute -bottom-5 right-1 text-[9px] text-gray-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Distribué</span>
                 </div>
 
-                {/* System Response (Ticket) */}
+                {/* System Response (Ticket Bubbles) */}
                 {tickets.map((t, idx) => (
-                  <div key={idx} className="self-start max-w-[85%] space-y-1">
-                    <div className="bg-white dark:bg-[#262629] text-gray-900 dark:text-gray-100 p-4 rounded-2xl rounded-tl-sm shadow-sm border border-gray-100 dark:border-gray-800">
-                      <pre className="text-[13px] leading-relaxed font-mono whitespace-pre-wrap break-words">
-                        {getTicketText(t)}
-                      </pre>
-                      
-                      {/* New Footer Item */}
-                      <div className="mt-6 bg-[#001A2C] rounded-2xl p-4 space-y-3">
-                        <p className="text-white text-[17px] font-bold leading-tight">
-                          Conditions générales de vente et d'utilisation
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-[#00A0E3] rounded-full flex items-center justify-center overflow-hidden">
-                            <svg viewBox="0 0 100 100" className="w-full h-full p-1">
-                              <path d="M20,80 L50,20 L80,80 Z" fill="white" />
-                              <path d="M40,80 L50,60 L60,80 Z" fill="#00A0E3" />
-                            </svg>
+                  <div key={idx} className="self-start max-w-[85%] space-y-2 animate-in fade-in slide-in-from-left-4 duration-300">
+                    <div className="relative">
+                      <div className="bg-[#e9e9eb] dark:bg-[#262629] text-black dark:text-white p-4 rounded-[20px] rounded-tl-[4px] shadow-sm border border-transparent dark:border-[#333]">
+                        <pre className="text-[14px] leading-relaxed font-mono whitespace-pre-wrap break-words">
+                          {getTicketText(t)}
+                        </pre>
+                        
+                        {/* New Footer Item */}
+                        <div className="mt-5 bg-[#001A2C] rounded-xl p-4 space-y-3 border border-white/5">
+                          <p className="text-white text-[15px] font-bold leading-tight">
+                            Conditions générales de vente et d'utilisation
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 bg-[#00A0E3] rounded-full flex items-center justify-center overflow-hidden">
+                              <svg viewBox="0 0 100 100" className="w-full h-full p-1">
+                                <path d="M20,80 L50,20 L80,80 Z" fill="white" />
+                                <path d="M40,80 L50,60 L60,80 Z" fill="#00A0E3" />
+                              </svg>
+                            </div>
+                            <span className="text-white text-[12px] font-medium opacity-80">www.reso-m.fr</span>
                           </div>
-                          <span className="text-white text-[13px] font-medium">www.reso-m.fr</span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 ml-1">
-                      <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase">{t.receivedTime}</span>
+                    <div className="flex items-center gap-2 ml-2">
+                      <span className="text-[9px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest">{t.receivedTime}</span>
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* Fake SMS Input */}
-              <div className="p-4 bg-white dark:bg-[#1E293B] border-t border-gray-200 dark:border-gray-800 flex items-center gap-3">
-                <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center text-gray-400">
-                  <Paperclip className="w-5 h-5" />
+              {/* Modern Message Input Bar */}
+              <div className="p-3 pb-8 bg-[#f9f9f9]/90 dark:bg-[#121212]/90 backdrop-blur-xl border-t border-gray-200 dark:border-[#222] flex items-center gap-2">
+                <button className="w-9 h-9 flex-shrink-0 flex items-center justify-center text-[#007AFF] dark:text-[#0a84ff] active:opacity-50">
+                  <Plus className="w-6 h-6" />
+                </button>
+                <div className="flex-1 bg-white dark:bg-[#262629] rounded-full px-4 py-2 flex items-center justify-between border border-gray-200 dark:border-[#333] shadow-inner">
+                  <span className="text-gray-400 dark:text-gray-500 text-[15px]">iMessage</span>
+                  <Smile className="w-6 h-6 text-gray-400" />
                 </div>
-                <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full px-4 py-2 flex items-center justify-between border border-gray-200 dark:border-gray-700">
-                  <span className="text-gray-400 dark:text-gray-500 text-sm">iMessage</span>
-                  <Smile className="w-5 h-5 text-gray-400" />
-                </div>
-                <div className="w-8 h-8 bg-[#007AFF] rounded-full flex items-center justify-center text-white">
+                <button className="w-8 h-8 bg-[#007AFF] dark:bg-[#0a84ff] rounded-full flex items-center justify-center text-white shadow-lg active:scale-90 transition-transform">
                   <Send className="w-4 h-4" />
-                </div>
+                </button>
               </div>
             </motion.div>
-          )}
-
-          {view === 'history' && (
+          ) : (
             <motion.div 
               key="history"
               initial={{ opacity: 0, x: 20 }}
