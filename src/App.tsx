@@ -72,6 +72,7 @@ export default function App() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [tickets, setTickets] = useState<TicketData[]>([]);
   const [history, setHistory] = useState<HistoryBatch[]>([]);
+  const [selectedBatchTimestamp, setSelectedBatchTimestamp] = useState<number | null>(null);
 
   // Apply dark mode class permanently
   useEffect(() => {
@@ -119,6 +120,7 @@ export default function App() {
     setView('sending');
     
     const now = new Date();
+    const timestamp = now.getTime();
     const config = TICKET_CONFIG[selectedType];
     const expiry = new Date(now.getTime() + config.duration * 60 * 1000);
 
@@ -149,11 +151,12 @@ export default function App() {
     }
 
     setTickets(newTickets);
+    setSelectedBatchTimestamp(timestamp);
 
     // Add to history
     const newBatch: HistoryBatch = {
       id: crypto.randomUUID(),
-      timestamp: Date.now(),
+      timestamp: timestamp,
       type: selectedType,
       count: ticketCount,
       tickets: newTickets,
@@ -380,7 +383,7 @@ reso-m.fr/cgv`;
               <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4 flex flex-col no-scrollbar bg-[#ffffff] dark:bg-[#1a1c1e]">
                 <div className="text-center my-4">
                   <span className="text-[12px] font-medium text-gray-500 dark:text-gray-400">
-                    lundi 30 mars • {tickets[0]?.receivedTime}
+                    {selectedBatchTimestamp ? new Date(selectedBatchTimestamp).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Aujourd\'hui'} • {tickets[0]?.receivedTime}
                   </span>
                 </div>
 
@@ -478,6 +481,7 @@ reso-m.fr/cgv`;
                       key={batch.id}
                       onClick={() => {
                         setTickets(batch.tickets);
+                        setSelectedBatchTimestamp(batch.timestamp);
                         setView('ticket');
                       }}
                       className="w-full bg-white dark:bg-[#2d2f31] p-5 rounded-[28px] shadow-sm hover:shadow-md transition-all text-left group border border-gray-100 dark:border-gray-800"
