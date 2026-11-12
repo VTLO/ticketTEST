@@ -1,0 +1,251 @@
+name: Build Universal Mreso iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  build-universal-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Extract Mreso_v1.02.apk & Patch Web Bundle for iOS WKWebView
+        run: |
+          APK_FILE=$(ls *.apk | head -n 1)
+          echo "Extracting $APK_FILE..."
+          unzip -q "$APK_FILE" "assets/public/*" "assets/capacitor.config.json" "res/mipmap-xxxhdpi-v4/ic_launcher.png" -d extracted
+
+          mv extracted/assets/public ./public
+
+          # Ensure viewport-fit=cover is present in index.html for iOS Safe Area / Dynamic Island
+          if grep -q "viewport" public/index.html && ! grep -q "viewport-fit=cover" public/index.html; then
+            sed -i '' 's/content="width=device-width/content="viewport-fit=cover, width=device-width/g' public/index.html
+          fi
+
+          # Write iOS-optimized capacitor.config.json with Native HTTP/Cookies enabled to bypass WKWebView CORS
+          cat << 'EOF' > capacitor.config.json
+          {
+            "appId": "com.mreso.app",
+            "appName": "Mreso",
+            "webDir": "public",
+            "bundledWebRuntime": false,
+            "server": {
+              "iosScheme": "capacitor",
+              "allowNavigation": ["*"]
+            },
+            "ios": {
+              "contentInset": "automatic",
+              "allowsLinkPreview": false,
+              "scrollEnabled": true,
+              "webContentsDebuggingEnabled": true
+            },
+            "plugins": {
+              "CapacitorHttp": {
+                "enabled": true
+              },
+              "CapacitorCookies": {
+                "enabled": true
+              }
+            }
+          }
+          EOF
+
+      - name: Scaffold Capacitor iOS & Inject Universal Podfile Settings
+        run: |
+          npm init -y
+          npm install @capacitor/core @capacitor/ios
+          npm install -D @capacitor/cli
+          npx cap add ios
+
+          # Patch Podfile to enforce iOS 15.0 minimum target, Universal (iPhone + iPad) family, and disable Pod code signing
+          cat << 'EOF' >> ios/App/Podfile
+
+          post_install do |installer|
+            installer.pods_project.targets.each do |target|
+              target.build_configurations.each do |config|
+                config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+                config.build_settings['TARGETED_DEVICE_FAMILY'] = '1,2'
+                config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+                config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
+                config.build_settings['CODE_SIGN_IDENTITY'] = ''
+                config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = ''
+              end
+            end
+          end
+          EOF
+
+          npx cap sync ios
+
+          # Generate 1024x1024 iOS AppIcon without alpha channel (required by iOS installer validation)
+          if [ -f "extracted/res/mipmap-xxxhdpi-v4/ic_launcher.png" ]; then
+            sips -s format bmp "extracted/res/mipmap-xxxhdpi-v4/ic_launcher.png" --out /tmp/icon.bmp
+            sips -s format png -z 1024 1024 /tmp/icon.bmp \
+              --out "ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
+          fi
+
+      - name: Patch Info.plist & PrivacyInfo.xcprivacy for Universal iOS Compliance
+        run: |
+          PLIST="ios/App/App/Info.plist"
+
+          # 1. Allow HTTP / Arbitrary Loads in WKWebView (ATS bypass)
+          /usr/libexec/PlistBuddy -c "Delete :NSAppTransportSecurity" "$PLIST" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity dict" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity:NSAllowsArbitraryLoads bool true" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity:NSAllowsArbitraryLoadsInWebContent bool true" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity:NSAllowsLocalNetworking bool true" "$PLIST"
+
+          # 2. Prevent WKAppBoundDomains from blocking Capacitor bridge injection
+          /usr/libexec/PlistBuddy -c "Delete :WKAppBoundDomains" "$PLIST" 2>/dev/null || true
+
+          # 3. Enable iPadOS windowing compatibility & full-screen multitasking support
+          /usr/libexec/PlistBuddy -c "Add :UIDesignRequiresCompatibility bool true" "$PLIST" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :UIRequiresFullScreen bool true" "$PLIST" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" "$PLIST" 2>/dev/null || true
+
+          # 4. Standard iOS permission descriptions to prevent runtime TCC crashes if web bundle requests media/location
+          /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string 'Mreso requires camera access for media features.'" "$PLIST" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string 'Mreso requires photo library access to upload images.'" "$PLIST" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :NSLocationWhenInUseUsageDescription string 'Mreso uses your location to display nearby services.'" "$PLIST" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :NSMicrophoneUsageDescription string 'Mreso requires microphone access for audio features.'" "$PLIST" 2>/dev/null || true
+
+          # 5. Inject Apple-compliant PrivacyInfo.xcprivacy into the app bundle
+          cat << 'EOF' > ios/App/App/PrivacyInfo.xcprivacy
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>NSPrivacyTracking</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypes</key>
+            <array/>
+            <key>NSPrivacyAccessedAPITypes</key>
+            <array>
+              <dict>
+                <key>NSPrivacyAccessedAPIType</key>
+                <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+                <key>NSPrivacyAccessedAPITypeReasons</key>
+                <array>
+                  <string>CA92.1</string>
+                </array>
+              </dict>
+              <dict>
+                <key>NSPrivacyAccessedAPIType</key>
+                <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+                <key>NSPrivacyAccessedAPITypeReasons</key>
+                <array>
+                  <string>DDA9.1</string>
+                </array>
+              </dict>
+            </array>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Compile Universal Release Binary (arm64 iPhone + iPad)
+        run: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            ARCHS="arm64" \
+            ONLY_ACTIVE_ARCH=NO \
+            TARGETED_DEVICE_FAMILY="1,2" \
+            IPHONEOS_DEPLOYMENT_TARGET="15.0" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES \
+            clean build
+
+      - name: Package Universal Variants (No-Check Bypass, Clean Sideload & Cert-Signed)
+        env:
+          P12_BASE64: ${{ secrets.IOS_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.IOS_P12_PASSWORD }}
+          PROVISION_BASE64: ${{ secrets.IOS_PROVISION_BASE64 }}
+        run: |
+          brew install ldid
+          RAW_APP="ios/App/build/Build/Products/Release-iphoneos/App.app"
+          cp ios/App/App/PrivacyInfo.xcprivacy "$RAW_APP/" 2>/dev/null || true
+          xattr -cr "$RAW_APP"
+
+          # --- VARIANT 1: Clean Unsigned IPA (Best for Feather, ESign, Sideloadly, AltStore, LiveContainer) ---
+          mkdir -p build_clean/Payload
+          cp -R "$RAW_APP" build_clean/Payload/App.app
+          find build_clean/Payload/App.app -name "_CodeSignature" -exec rm -rf {} + 2>/dev/null || true
+          rm -f build_clean/Payload/App.app/embedded.mobileprovision
+          cd build_clean && zip -qr ../Mreso_v1.02_Universal_CleanSideload.ipa Payload && cd ..
+          rm -rf build_clean
+
+          # --- VARIANT 2: No-Check Ad-Hoc / CoreTrust / Testing Signed IPA ---
+          mkdir -p build_nocheck/Payload
+          cp -R "$RAW_APP" build_nocheck/Payload/App.app
+
+          cat << 'EOF' > testing_entitlements.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>application-identifier</key>
+            <string>*.com.mreso.app</string>
+            <key>get-task-allow</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+          # Sign all embedded frameworks first, then the main binary with ldid and ad-hoc codesign
+          if [ -d "build_nocheck/Payload/App.app/Frameworks" ]; then
+            for fw in build_nocheck/Payload/App.app/Frameworks/*.framework; do
+              [ -e "$fw" ] || continue
+              ldid -S "$fw" || true
+              codesign --force --sign "-" --timestamp=none "$fw"
+            done
+          fi
+
+          ldid -Stesting_entitlements.plist "build_nocheck/Payload/App.app/App"
+          codesign --force --deep --sign "-" --entitlements testing_entitlements.plist --timestamp=none "build_nocheck/Payload/App.app"
+
+          cd build_nocheck && zip -qr ../Mreso_v1.02_Universal_NoCheck.ipa Payload && cd ..
+          rm -rf build_nocheck testing_entitlements.plist
+
+          # --- VARIANT 3: Full Cryptographic Signing via zsign (If Secrets Configured) ---
+          if [ -n "$P12_BASE64" ] && [ -n "$PROVISION_BASE64" ]; then
+            echo "Signing with provided .p12 and .mobileprovision..."
+            brew install openssl@3
+            git clone --depth=1 https://github.com/zhlynn/zsign.git
+            cd zsign/build/macos && make && cd ../../..
+
+            echo "$P12_BASE64" | base64 --decode > cert.p12
+            echo "$PROVISION_BASE64" | base64 --decode > profile.mobileprovision
+
+            ./zsign/bin/zsign \
+              -k cert.p12 \
+              -p "$P12_PASSWORD" \
+              -m profile.mobileprovision \
+              -f \
+              -z 9 \
+              -o Mreso_v1.02_Universal_CertSigned.ipa \
+              Mreso_v1.02_Universal_CleanSideload.ipa
+
+            rm -f cert.p12 profile.mobileprovision
+          fi
+
+      - name: Upload All Universal iOS IPAs
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mreso-Universal-iOS-IPAs
+          path: "*.ipa"
+          
